@@ -1,6 +1,6 @@
 const app = require('./src');
 
-const port = process.env.port || 8081;
+const port = process.env.PORT || 8081;
 
 app.get('/', (req, res) => res.send('Hello World!')); // TODO Remove?
 
