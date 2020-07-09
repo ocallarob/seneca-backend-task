@@ -46,4 +46,64 @@ describe('/courses', () => {
       await request(app).post(`/courses/${courseId}`).send({}).expect(400);
     });
   });
+
+  describe('When GET /{courseId}', () => {
+    const courseId = uuid();
+    const userId = uuid();
+    const sessions = [uuid(), uuid(), uuid()];
+    const sessionData = {};
+
+    const lifetimeStats = {
+      totalModulesStudied: 0,
+      averageScore: 0,
+      timeStudied: 0,
+    };
+
+    beforeEach((done) => {
+      sessions.forEach((sessionId, index) => {
+        const courseStatsDiff = {
+          totalModulesStudied: number(14) + 1, // 15 module types (non 0)
+          averageScore: number(100), // Assume scores in %
+          timeStudied: number() + 10000, // Believable time (min. 10 Sec?)
+        };
+        const userStats = db.get(userId) || {};
+        db.update(userId, {
+          [courseId]: { ...userStats[courseId], [sessionId]: courseStatsDiff },
+        });
+
+        sessionData[sessionId] = { sessionId, ...courseStatsDiff };
+
+        Object.keys(courseStatsDiff).forEach((key) => {
+          lifetimeStats[key] += Number(courseStatsDiff[key]);
+        });
+
+        if (index === sessions.length - 1) {
+          done();
+        }
+      });
+    });
+
+    it('Should return lifetime stats for the user in that course', async () => {
+      lifetimeStats.totalModulesStudied /= sessions.length; // very ugly operator...
+      lifetimeStats.averageScore /= sessions.length;
+
+      await request(app)
+        .get(`/courses/${courseId}`)
+        .set({ 'X-User-Id': userId })
+        .expect(lifetimeStats)
+        .expect(200);
+    });
+
+    describe('When GET /{courseId}/sessions/{sessionId}', () => {
+      sessions.forEach((sessionId) => {
+        it('Should return session data', async () => {
+          await request(app)
+            .get(`/courses/${courseId}/sessions/${sessionId}`)
+            .set({ 'X-User-Id': userId })
+            .expect(sessionData[sessionId])
+            .expect(200);
+        });
+      });
+    });
+  });
 });
