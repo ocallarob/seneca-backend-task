@@ -1,7 +1,5 @@
 # Stats Service
 
-Solution is running at http://seneca-backend-task-dev.eu-west-2.elasticbeanstalk.com
-
 ## Problem
 
 Our learning platform needs to track a user's stats for a particular course. We do this using a stats service.
