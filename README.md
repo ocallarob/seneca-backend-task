@@ -6,8 +6,7 @@ To run the test the Specs run `npm t`
 
 This task is being run using Elastic Beanstalk (email me for my environment URL). To run it you'll need an environment set up on AWS (see docs) and ebcli (`brew install awsebcli`) and set up with `eb init`
 
-To run the app on EB first create the instance with `eb create` following the prompts
-Then `eb deploy` to zip the repo from its most recent commit and send to EB
+To run the app on EB first create and deploy the instance with `eb create` following the prompts
 Run `eb open` to go to the app URL when ready
 
 ## My Assumptions:
