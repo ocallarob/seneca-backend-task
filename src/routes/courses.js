@@ -45,6 +45,7 @@ router.get('/:courseId', async (req, res) => {
       return res.sendStatus(400);
     }
     const userStats = db.get(userId);
+    if (!userStats) return res.sendStatus(404);
     const courseStats = userStats[courseId];
     if (!courseStats) return res.sendStatus(404);
 
@@ -85,6 +86,7 @@ router.get('/:courseId/sessions/:sessionId', (req, res) => {
       return res.sendStatus(400);
     }
     const userStats = db.get(userId);
+    if (!userStats) return res.sendStatus(404);
     const courseStats = userStats[courseId];
     if (!courseStats) return res.sendStatus(404);
     const sessionStats = courseStats[sessionId];

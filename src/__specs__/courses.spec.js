@@ -31,6 +31,23 @@ describe('/courses', () => {
         }
       });
 
+      it('Should allow implict session edits', async () => {
+        if (index === sessions.length - 1) {
+          const storedStats = db.get(userId)[courseId][sessionId];
+          const newStats = { ...stats, averageScore: number(100) };
+          await request(app)
+            .post(`/courses/${courseId}`)
+            .set({ 'X-User-Id': userId })
+            .send(newStats)
+            .expect(201);
+          const editedStats = db.get(userId)[courseId][sessionId];
+          expect(editedStats.averageScore).not.toEqual(
+            storedStats.averageScore
+          );
+          expect(editedStats.averageScore).toEqual(newStats.averageScore);
+        }
+      });
+
       it('Should return 400 for missing stats', async () => {
         const missingStat = Object.keys(stats).sort()[index];
         delete stats[missingStat];
@@ -94,6 +111,21 @@ describe('/courses', () => {
         .expect(200);
     });
 
+    it('Should return 404 for missing params', async () => {
+      await request(app)
+        .get(`/courses/${uuid()}`)
+        .set({ 'X-User-Id': userId })
+        .expect(404);
+      await request(app)
+        .get(`/courses/${courseId}`)
+        .set({ 'X-User-Id': uuid() })
+        .expect(404);
+    });
+
+    it('Should reject requests missing X-User-Id', async () => {
+      await request(app).get(`/courses/${courseId}`).expect(400);
+    });
+
     describe('When GET /{courseId}/sessions/{sessionId}', () => {
       sessions.forEach((sessionId) => {
         it('Should return session data', async () => {
@@ -102,6 +134,27 @@ describe('/courses', () => {
             .set({ 'X-User-Id': userId })
             .expect(sessionData[sessionId])
             .expect(200);
+        });
+
+        it('Should reject requests missing X-User-Id', async () => {
+          await request(app)
+            .get(`/courses/${courseId}/sessions/${sessionId}`)
+            .expect(400);
+        });
+
+        it('Should return 404 for missing params', async () => {
+          await request(app)
+            .get(`/courses/${uuid()}/sessions/${sessionId}`)
+            .set({ 'X-User-Id': userId })
+            .expect(404);
+          await request(app)
+            .get(`/courses/${courseId}/sessions/${uuid()}`)
+            .set({ 'X-User-Id': userId })
+            .expect(404);
+          await request(app)
+            .get(`/courses/${courseId}/sessions/${sessionId}`)
+            .set({ 'X-User-Id': uuid() })
+            .expect(404);
         });
       });
     });
