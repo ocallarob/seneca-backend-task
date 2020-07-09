@@ -1,4 +1,10 @@
-# seneca-backend-task
+# Seneca-backend-task
+
+This task is being run using Elastic Beanstalk. To run it you'll need an environment set up on AWS (see docs) and ebcli (`brew install awsebcli`) and set up with `eb init`
+
+To run the app on EB first create the instance with `eb create` following the prompts
+Then `eb deploy` to zip the repo from its most recent commit and send to EB
+Run `eb open` to go to the app url when ready
 
 ## My Assumptions:
 
