@@ -1,13 +1,23 @@
 const express = require('express');
-const { json: jsonParser } = require('body-parser');
 
-const app = express();
 const router = express.Router();
 
-app.use(jsonParser());
+const postBodyKeys = [
+  'totalModulesStudied',
+  'timeStudied',
+  'averageScore',
+  'sessionId',
+];
 
+// eslint-disable-next-line no-prototype-builtins
+const isValidPostBody = (body) =>
+  postBodyKeys.every((key) => Object.prototype.hasOwnProperty.call(body, key));
 router.post('/:courseId', async (req, res) => {
   try {
+    const userId = req.get('X-User-Id');
+    const { body } = req;
+
+    if (!userId || !isValidPostBody(body)) return res.sendStatus(400);
     res.sendStatus(201);
   } catch (err) {
     console.error(err);
