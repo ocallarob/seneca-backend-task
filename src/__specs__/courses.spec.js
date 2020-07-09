@@ -4,19 +4,20 @@ const {
 } = require('faker');
 
 const app = require('..');
+const db = require('../mockDB');
 
 describe('/courses', () => {
   describe('When POST /{courseId}', () => {
     const courseId = uuid();
     const userId = uuid();
-    const courseStatsDiff = {
-      totalModulesStudied: number(),
-      averageScore: number(100), // Assume scores in %
-      timeStudied: number(),
-    };
     const sessions = [uuid(), uuid(), uuid()];
 
     sessions.forEach((sessionId, index) => {
+      const courseStatsDiff = {
+        totalModulesStudied: number(14) + 1, // 15 module types (non 0)
+        averageScore: number(100), // Assume scores in %
+        timeStudied: number() + 10000, // Believable time (min 10 Sec?)
+      };
       const stats = { ...courseStatsDiff, sessionId };
       it('Should return 201 OK and course lifetime stats Object', async () => {
         await request(app)
@@ -24,6 +25,10 @@ describe('/courses', () => {
           .set({ 'X-User-Id': userId })
           .send(stats)
           .expect(201);
+        if (index === sessions.length - 1) {
+          const userStats = db.get(userId)[courseId];
+          expect(Object.keys(userStats).length).toEqual(sessions.length);
+        }
       });
 
       it('Should return 400 for missing stats', async () => {
